@@ -12,7 +12,7 @@ class TaskController extends Controller
 {
     public function index(): JsonResponse
     {
-        return new JsonResponse(['message' => 'Main fetching of records', 'status' => true], 200);
+
     }
 
     /**
@@ -30,15 +30,15 @@ class TaskController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-
+            // Validate incoming request
             $validatedData = $request->validate([
-                'tasktitle' => 'required|string|max:50',
-                'taskdescription' => 'nullable|string',
-                'taskcompleted' => 'boolean',
+                'task_title' => 'required|string|max:50',
+                'task_description' => 'nullable|string',
+                'task_completed' => 'boolean',
             ]);
 
             // Check if description content exceeds 255 characters
-            if (strlen($validatedData['taskdescription']) > 255) {
+            if (strlen($validatedData['task_description']) > 255) {
                 return new JsonResponse(
                     [
                         'message' => 'Description length exceeded',
@@ -49,7 +49,7 @@ class TaskController extends Controller
             }
 
             // Check if record matches the task title provided
-            if (TaskEntry::where('task_title', $validatedData['tasktitle'])->exists()) {
+            if (TaskEntry::where('task_title', $validatedData['task_title'])->exists()) {
                 return new JsonResponse(
                     [
                         'message' => 'Task already exists',
@@ -59,10 +59,12 @@ class TaskController extends Controller
                 );
             }
 
+            // Create Task entry in the task table
+            // Returns an array with the record information
             $task = TaskEntry::create([
-                'task_title' => $validatedData['tasktitle'],
-                'task_description' => $validatedData['taskdescription'],
-                'task_completed' => $request->has('taskcompleted') ? true : false,
+                'task_title' => $validatedData['task_title'],
+                'task_description' => $validatedData['task_description'],
+                'task_completed' => $request->has('task_completed') ? true : false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -72,20 +74,23 @@ class TaskController extends Controller
                 return new JsonResponse(
                     [
                         'message' => 'Task created successfully',
-                        'status' => false
+                        'status' => true
                     ],
                     Response::HTTP_OK
                 );
             } else {
                 return new JsonResponse(
                     [
-                        'message' => 'Task created successfully',
+                        'message' => 'Could not create task',
                         'status' => false
                     ],
                     Response::HTTP_OK
                 );
             }
         } catch (\Exception $ex) {
+            Log::info('Exception thrown' . $ex->getMessage()); // Log exception for debugging purposes
+
+            // return JSON response
             return new JsonResponse(
                 [
                     'message' => 'Unable to process request',
@@ -111,7 +116,7 @@ class TaskController extends Controller
      */
     public function delete($id): JsonResponse
     {
-        return new JsonResponse(['message' => 'Main Deletion of records', 'status' => true], 200);
+
     }
 
     /**
