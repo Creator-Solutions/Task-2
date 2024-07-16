@@ -183,9 +183,65 @@ class TaskController extends Controller
      * @param [type] $id
      * @return JsonResponse
      */
-    public function edit($id): JsonResponse
+    public function edit(Request $request, $id): JsonResponse
     {
-        return new JsonResponse(['message' => 'Main Edit of records', 'status' => true], 200);
+        try {
+
+            $validatedData = $request->validate([
+                'task_title' => 'required|string|max:50',
+                'task_description' => 'nullable|string',
+                'task_completed' => 'boolean',
+            ]);
+
+            // Check if description is less than 255 characters
+            if (strlen($validatedData['task_description']) > 255) {
+                return new JsonResponse(
+                    [
+                        'message' => 'Description exceeded 255 characters',
+                        'status' => false
+                    ],
+                    Response::HTTP_OK
+                );
+            }
+
+            // Locate entry in database
+            // Empty check not required -> Exception thrown
+            $task = TaskEntry::findOrFail($id);
+
+            // Update task attributes
+            $task->task_title = $validatedData['task_title'];
+            $task->task_description = $validatedData['task_description'];
+            $task->task_completed = $request->has('task_completed') && $request->input('task_completed') == '1';
+
+            if ($task->save()) {
+                return new JsonResponse(
+                    [
+                        'message' => 'Task updated successfully',
+                        'status' => true
+                    ],
+                    Response::HTTP_OK
+                );
+            } else {
+                return new JsonResponse(
+                    [
+                        'message' => 'Unable to update task',
+                        'status' => false
+                    ],
+                    Response::HTTP_OK
+                );
+            }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+            Log::critical('Excpetion Thrown: ' . $ex->getMessage()); // Log exception for debugging purposes
+
+            // Return JSON response indicating failure
+            return new JsonResponse(
+                [
+                    'message' => 'Unable to process request',
+                    'status' => false
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
 
     public function token()
