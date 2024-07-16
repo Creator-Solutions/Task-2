@@ -12,7 +12,26 @@ class TaskController extends Controller
 {
     public function index(): JsonResponse
     {
-
+        try {
+            $tasks = TaskEntry::all();
+            return new JsonResponse(
+                [
+                    'message' => 'success',
+                    'tasks' => $tasks,
+                    'status' => true
+                ],
+                Response::HTTP_OK
+            );
+        } catch (\Exception $ex) {
+            Log::info('Exception thrown: ' . $ex->getMessage());
+            return new JsonResponse(
+                [
+                    'message' => 'Unable to process request',
+                    'status' => true
+                ],
+                Response::HTTP_OK
+            );
+        }
     }
 
     /**
