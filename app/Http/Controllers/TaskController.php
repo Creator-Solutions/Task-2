@@ -135,7 +135,39 @@ class TaskController extends Controller
      */
     public function delete($id): JsonResponse
     {
+        try {
+            $task = TaskEntry::findOrFail($id);
 
+            if ($task->delete()) {
+                return new JsonResponse(
+                    [
+                        'message' => 'Successfully deleted task',
+                        'status' => true
+                    ],
+                    Response::HTTP_OK
+                );
+            } else {
+                Log::info("Unable to delete task where id@$id");
+                return new JsonResponse(
+                    [
+                        'message' => 'Could not delete task',
+                        'status' => false
+                    ],
+                    Response::HTTP_OK
+                );
+            }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+            Log::critical('Excpetion Thrown: ' . $ex->getMessage()); // Log exception for debugging purposes
+
+            // Return JSON response indicating failure
+            return new JsonResponse(
+                [
+                    'message' => 'Unable to process request',
+                    'status' => false
+                ],
+                Response::HTTP_OK
+            );
+        }
     }
 
     /**
