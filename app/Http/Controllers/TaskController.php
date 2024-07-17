@@ -10,9 +10,26 @@ use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
+    /**
+     * ----------------
+     * Home endpoint
+     * ----------------
+     *
+     * Method called from the
+     * GET::/tasks/ endpoint
+     * to retrieve all the
+     * tasks stored in db
+     *
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         try {
+            /**
+             * Empty/Null check not required
+             * Allow empty results to display
+             * empty table.
+             */
             $tasks = TaskEntry::all();
             return new JsonResponse(
                 [
