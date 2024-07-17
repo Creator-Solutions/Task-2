@@ -10,12 +10,4 @@ export default defineConfig({
             refresh: true,
         }),
     ],
-    server: {
-        port: 5173, // Ensure this matches the port you're accessing
-    },
-    resolve: {
-        alias: {
-            vue: "vue/dist/vue.esm-bundler.js",
-        },
-    },
 });
