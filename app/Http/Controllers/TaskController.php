@@ -153,6 +153,7 @@ class TaskController extends Controller
     public function delete($id): JsonResponse
     {
         try {
+            Log::info('CSRF Token:', [request()->header('X-CSRF-TOKEN')]);
             $task = TaskEntry::findOrFail($id);
 
             if ($task->delete()) {

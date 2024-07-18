@@ -1,5 +1,9 @@
 <script setup>
-import { getTaskService, createTaskService } from "../services/task.service";
+import {
+    getTaskService,
+    createTaskService,
+    deleteTaskService,
+} from "../services/task.service";
 import { ref } from "vue";
 import Header from "./Header.vue";
 import Table from "./Table.vue";
@@ -11,6 +15,8 @@ const title = ref("");
 const taskTitle = ref("");
 const taskDescription = ref("");
 const submitAction = ref("");
+const snackBarMessage = ref("");
+const showSnackBar = ref(false);
 const taskCompleted = ref(false);
 const data = ref([]);
 const loading = ref(false);
@@ -45,7 +51,7 @@ const onAddTask = async () => {
             console.log(response.data);
             if (response.data.status) {
                 showPopUp.value = false;
-                window.location.reload;
+                window.location.reload();
             }
         } else {
             error.value = response.error;
@@ -62,8 +68,26 @@ const onEditTask = (id) => {
     console.log(id);
 };
 
-const onDeleteTask = (id) => {
-    console.log("Delete");
+const onDeleteTask = async (id) => {
+    try {
+        const response = await deleteTaskService(id);
+
+        if (!response.isError && response.data) {
+            snackBarMessage.value = "Task Deleted Successfully";
+            showSnackBar.value = true;
+        } else {
+            error.value = response.error;
+            console.log(response.error);
+        }
+    } catch (err) {
+        console.log(err);
+        error.value = err;
+    }
+};
+
+const onCloseSnackBar = () => {
+    showSnackBar.value = false;
+    window.location.reload();
 };
 
 const onCheckTaskCompleted = () => {
@@ -115,6 +139,16 @@ fetchData(); // Call fetchData on component setup
                     :submitAction="submitAction"
                 />
             </v-dialog>
+
+            <v-snackbar v-model="showSnackBar">
+                {{ snackBarMessage }}
+
+                <template v-slot:actions>
+                    <v-btn color="pink" variant="text" @click="onCloseSnackBar">
+                        Close
+                    </v-btn>
+                </template>
+            </v-snackbar>
 
             <v-dialog v-model="showEditPopUp" max-width="500">
                 <NewTaskForm
