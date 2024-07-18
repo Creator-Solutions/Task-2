@@ -10,4 +10,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            "@mdi/js": "node_modules/@mdi/js", // Adjust the path as necessary
+        },
+    },
 });

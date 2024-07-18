@@ -1,4 +1,5 @@
 <script setup>
+import { Util } from "../utils/utils";
 const props = defineProps({
     rows: {
         type: [Array, []],
@@ -12,7 +13,23 @@ const props = defineProps({
         type: [Function, null],
         required: true,
     },
+    onEditTask: {
+        type: [Function, null],
+        required: true,
+    },
+    onDeleteTask: {
+        type: [Function, null],
+        required: true,
+    },
 });
+
+const onEditTask = (id) => {
+    props.onEditTask(id);
+};
+
+const onDeleteTask = (id) => {
+    props.onDeleteTask(id);
+};
 </script>
 
 <template>
@@ -28,31 +45,45 @@ const props = defineProps({
                 >
             </div>
             <v-data-table
-                class="center-table"
+                class="mt-8"
                 :headers="props.headers"
                 :items="props.rows"
             >
                 <template class="h-14" #item="{ item }">
-                    <td class="text-center h-14">{{ item.id }}</td>
-                    <td class="text-center">{{ item.task_title }}</td>
-                    <td class="text-center">
-                        {{ item.task_description }}
-                    </td>
-                    <td class="text-center">{{ item.task_completed }}</td>
-                    <td class="text-center">{{ item.created_at }}</td>
-                    <td class="text-center">{{ item.updated_at }}</td>
+                    <tr>
+                        <td class="text-center h-14">{{ item.id }}</td>
+                        <td class="text-center">{{ item.task_title }}</td>
+                        <td class="text-center">
+                            {{ item.task_description }}
+                        </td>
+                        <td class="text-center">{{ item.task_completed }}</td>
+                        <td class="text-center">
+                            {{ Util.formatDate(item.created_at) }}
+                        </td>
+                        <td class="text-center">
+                            {{ Util.formatDate(item.updated_at) }}
+                        </td>
+                        <td class="w-26 text-center">
+                            <div
+                                class="w-full h-full flex flex-row justify-evenly"
+                            >
+                                <v-btn
+                                    color="buttonSecondary"
+                                    class="self-center"
+                                    @click="onEditTask(item.id)"
+                                    >Edit</v-btn
+                                >
+                                <v-btn
+                                    color="buttonSecondary"
+                                    class="self-center ml-5"
+                                    @click="onDeleteTask(item.id)"
+                                    >Delete</v-btn
+                                >
+                            </div>
+                        </td>
+                    </tr>
                 </template></v-data-table
             >
         </div>
     </v-container>
 </template>
-
-<style scoped>
-.center-table .v-data-table-header th {
-    text-align: center;
-}
-.center-table td {
-    text-align: center;
-    vertical-align: middle;
-}
-</style>
