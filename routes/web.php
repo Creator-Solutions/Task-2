@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/api/tasks', [TaskController::class, 'index'])->name('api/tasks');
-Route::post('/tasks/store', [TaskController::class, 'store']);
-Route::delete('/tasks/{id}', [TaskController::class, 'delete']);
-Route::put('/tasks/{id}', [TaskController::class, 'edit']);
+Route::post('/api/tasks/store', [TaskController::class, 'store'])->name('api/tasks/store');
+Route::delete('/api/tasks/{id}', [TaskController::class, 'delete'])->name('api/tasks/{id}');
+Route::put('/api/tasks/{id}', [TaskController::class, 'edit'])->name('api/tasks/{id}');
 
 Route::get('/tasks/token', [TaskController::class, 'token']);
 Route::get('/', function () {
