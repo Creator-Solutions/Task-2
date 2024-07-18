@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, ref, toRef, watch } from "vue";
+import { defineProps, ref, toRefs, watch } from "vue";
 
 const props = defineProps({
     showPopUpProp: {
@@ -20,7 +20,7 @@ const props = defineProps({
     },
     taskCompleted: {
         type: Boolean,
-        default: "",
+        default: false,
     },
     onCheckTaskCompleted: {
         type: Function,
@@ -37,9 +37,11 @@ const props = defineProps({
 });
 
 // Create local state copies
-const localTaskTitle = ref(props.taskTitle.value);
-const localTaskDescription = ref(props.taskDescription.value);
-const localTaskCompleted = ref(props.taskCompleted.value);
+// Create local state copies
+const localTaskTitle = ref(props.taskTitle);
+const localTaskDescription = ref(props.taskDescription);
+const localTaskCompleted = ref(props.taskCompleted);
+const localsubmitAction = ref(props.submitAction);
 
 // Watch for changes and emit updates
 const emit = defineEmits([
@@ -47,6 +49,18 @@ const emit = defineEmits([
     "update:taskDescription",
     "update:taskCompleted",
 ]);
+
+watch(() => props.taskTitle, (newValue) => {
+    localTaskTitle.value = newValue;
+});
+
+watch(() => props.taskDescription, (newValue) => {
+    localTaskDescription.value = newValue;
+});
+
+watch(() => props.taskCompleted, (newValue) => {
+    localTaskCompleted.value = newValue;
+});
 
 watch(localTaskTitle, (newValue) => {
     emit("update:taskTitle", newValue);
@@ -58,6 +72,15 @@ watch(localTaskDescription, (newValue) => {
 
 watch(localTaskCompleted, (newValue) => {
     emit("update:taskCompleted", newValue);
+});
+
+// Watch for changes in submitAction and reset the form state if it's for a new task
+watch(localsubmitAction, (newValue) => {
+    if (newValue === "Create Task") {
+        localTaskTitle.value = "";
+        localTaskDescription.value = "";
+        localTaskCompleted.value = false;
+    }
 });
 </script>
 
@@ -87,7 +110,7 @@ watch(localTaskCompleted, (newValue) => {
                         <v-checkbox
                             label="Task Completed"
                             @click="props.onCheckTaskCompleted"
-                            v-model="props.taskCompleted"
+                            v-model="localTaskCompleted"
                         />
                     </v-col>
                 </v-row>

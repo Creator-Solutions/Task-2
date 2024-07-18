@@ -100,10 +100,12 @@ class TaskController extends Controller
             $task = TaskEntry::create([
                 'task_title' => $validatedData['task_title'],
                 'task_description' => $validatedData['task_description'],
-                'task_completed' => $request->has('task_completed') ? true : false,
+                'task_completed' => $request->has('task_completed') && $request->input('task_completed') == true ? true : false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            Log::info($task);
 
             //Check if task was created successfully
             if ($task) {
