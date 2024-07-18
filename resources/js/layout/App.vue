@@ -3,19 +3,21 @@ import {
     getTaskService,
     createTaskService,
     deleteTaskService,
+    editTaskService,
 } from "../services/task.service";
 import { ref } from "vue";
 import Header from "./Header.vue";
 import Table from "./Table.vue";
 import NewTaskForm from "./NewTaskForm.vue";
 
-const showPopUp = ref(false);
-const showEditPopUp = ref(false);
+const taskId = ref(0);
 const title = ref("");
 const taskTitle = ref("");
 const taskDescription = ref("");
 const submitAction = ref("");
 const snackBarMessage = ref("");
+const showPopUp = ref(false);
+const showEditPopUp = ref(false);
 const showSnackBar = ref(false);
 const taskCompleted = ref(false);
 const data = ref([]);
@@ -32,26 +34,32 @@ const headers = ref([
     { key: "", title: "Actions" },
 ]);
 
-const onAddTask = async () => {
+const onShowAddTask = async () => {
     showPopUp.value = true;
     title.value = "New Task";
     submitAction.value = "Create Task";
 
+    taskTitle.value = "";
+    taskDescription.value = "";
+    taskCompleted.value = false;
+};
+
+const onCreateTask = async () => {
     try {
         let data = {
             task_title: taskTitle.value,
             task_description: taskDescription.value,
             task_completed: taskCompleted.value,
         };
+
         console.log(data);
 
         const response = await createTaskService(data);
 
         if (!response.isError && response.data) {
-            console.log(response.data);
             if (response.data.status) {
                 showPopUp.value = false;
-                window.location.reload();
+                //  window.location.reload();
             }
         } else {
             error.value = response.error;
@@ -61,11 +69,38 @@ const onAddTask = async () => {
     }
 };
 
-const onEditTask = (id) => {
-    showEditPopUp.value = true;
-    title.value = "Edit Task";
-    submitAction.value = "Edit Task";
-    console.log(id);
+const onShowTask = (id) => {
+    const task = data.value.find((task) => task.id === id);
+    if (task) {
+        taskId.value = task.id;
+        taskTitle.value = task.task_title;
+        taskDescription.value = task.task_description;
+        taskCompleted.value = task.task_completed === "1"; // Convert to Boolean
+        title.value = "Edit Task";
+        submitAction.value = "Edit Task";
+        showEditPopUp.value = true;
+    }
+};
+
+const onEditTask = async (id) => {
+    try {
+        let data = {
+            id: taskId.value,
+            task_title: taskTitle.value,
+            task_description: taskDescription.value,
+            task_completed: taskCompleted.value,
+        };
+
+        const response = await editTaskService(data);
+
+        if (!response.isError && response.data.status) {
+            showEditPopUp.value = !showEditPopUp.value;
+            showSnackBar.value = true;
+            snackBarMessage.value = "Task updated successfully";
+        }
+    } catch (err) {
+        error.value = err;
+    }
 };
 
 const onDeleteTask = async (id) => {
@@ -80,7 +115,6 @@ const onDeleteTask = async (id) => {
             console.log(response.error);
         }
     } catch (err) {
-        console.log(err);
         error.value = err;
     }
 };
@@ -121,8 +155,8 @@ fetchData(); // Call fetchData on component setup
             <Table
                 :rows="data"
                 :headers="headers"
-                :onAddTasks="onAddTask"
-                :onEditTask="onEditTask"
+                :onAddTasks="onShowAddTask"
+                :onEditTask="onShowTask"
                 :onDeleteTask="onDeleteTask"
             />
 
@@ -135,7 +169,7 @@ fetchData(); // Call fetchData on component setup
                     v-model:taskCompleted="taskCompleted"
                     :taskCompleted="taskCompleted"
                     :onCheckTaskCompleted="onCheckTaskCompleted"
-                    :onSubmitTask="onAddTask"
+                    :onSubmitTask="onCreateTask"
                     :submitAction="submitAction"
                 />
             </v-dialog>
