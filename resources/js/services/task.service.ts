@@ -3,6 +3,7 @@ import axios from "axios";
 const endpoints = {
     getTasks: "/tasks/",
     storeTask: "/tasks/store",
+    deleteTask: "/tasks/",
 };
 
 const headers = {
@@ -10,7 +11,13 @@ const headers = {
     "Access-Control-Allow-Origin": "*",
 };
 
+const getCsrfToken = () => {
+    const tokenElement = document.querySelector('meta[name="csrf-token"]');
+    return tokenElement ? tokenElement.getAttribute("content") : "";
+};
+
 const baseUrl = "http://localhost:8000/api";
+axios.defaults.headers.common["X-CSRF-TOKEN"] = getCsrfToken();
 
 export const getTaskService = async () => {
     const axiosConfig = {
@@ -50,6 +57,37 @@ export const createTaskService = async (data) => {
         },
         headers: headers,
     };
+
+    return await axios
+        .request(axiosConfig)
+        .then((res) => {
+            return {
+                isError: false,
+                data: res.data,
+                error: "",
+            };
+        })
+        .catch((err) => {
+            return {
+                isError: true,
+                data: "",
+                error: err,
+            };
+        });
+};
+
+export const deleteTaskService = async (id: number) => {
+    console.log(getCsrfToken());
+    axios.defaults.headers.common["X-CSRF-TOKEN"] = getCsrfToken();
+    const axiosConfig = {
+        method: "DELETE",
+        url: `${baseUrl}${endpoints.deleteTask}${id}`,
+        headers: {
+            ...headers,
+            "X-CSRF-TOKEN": getCsrfToken(),
+        },
+    };
+    console.log(axiosConfig);
 
     return await axios
         .request(axiosConfig)
